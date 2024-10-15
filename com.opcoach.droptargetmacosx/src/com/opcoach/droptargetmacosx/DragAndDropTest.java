@@ -1,7 +1,17 @@
 package com.opcoach.droptargetmacosx;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.dnd.*;
+import org.eclipse.swt.dnd.DND;
+import org.eclipse.swt.dnd.DragSource;
+import org.eclipse.swt.dnd.DragSourceAdapter;
+import org.eclipse.swt.dnd.DragSourceEvent;
+import org.eclipse.swt.dnd.DropTarget;
+import org.eclipse.swt.dnd.DropTargetAdapter;
+import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.dnd.TextTransfer;
+import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.dnd.TransferData;
+import org.eclipse.swt.dnd.URLTransfer;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -11,7 +21,31 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
 public class DragAndDropTest {
+	
 
+	public static StringBuffer displayTransfers(Transfer[] transfers) {
+	    StringBuffer result = new StringBuffer();
+
+	    if (transfers == null || transfers.length == 0) {
+	        result.append("No transfers available.\n");
+	        return result;
+	    }
+	    
+	    result.append("Supported transfers:\n");
+	    for (Transfer transfer : transfers) {
+	        if (transfer instanceof TextTransfer) {
+	            result.append("TextTransfer is supported.\n");
+	        } else if (transfer instanceof URLTransfer) {
+	            result.append("URLTransfer is supported.\n");
+	        } else {
+	            result.append("Unknown transfer: ").append(transfer.getClass().getSimpleName()).append("\n");
+	        }
+	    }
+	    
+	    return result;
+	}
+	
+	
     public static void main(String[] args) {
         // Setup SWT display and shell
         Display display = new Display();
@@ -60,7 +94,13 @@ public class DragAndDropTest {
                     String url = (String) URLTransfer.getInstance().nativeToJava(event.currentDataType);
                     dropLabel.setText(url != null ? "URL dropped: " + url : "No URL data found.");
                     System.out.println("Received URLTransfer");
+                } else {
+                    // Handle unsupported transfer types
+                    dropLabel.setText("Unsupported transfer type dropped.");
+                    System.out.println("Unsupported transfer type dropped.");
                 }
+
+                // Log all available transfer types
                 for (TransferData data : event.dataTypes) {
                     System.out.println("Type: " + data.type);
                 }
@@ -78,12 +118,24 @@ public class DragAndDropTest {
         dragSource.setTransfer(sourceTypes);
 
         dragSource.addDragListener(new DragSourceAdapter() {
+        	
+        	@Override
+        	public void dragStart(DragSourceEvent event) {
+        		// TODO Auto-generated method stub
+        		super.dragStart(event);
+        		DragSource source = (DragSource)event.getSource();
+        		Label t = (Label) source.getControl();
+                System.out.println("Dragging TextTransfer from Text Widget: " + t.getText() + "Transfers : " +  displayTransfers(source.getTransfer()));
+
+        	}
             @Override
             public void dragSetData(DragSourceEvent event) {
                 if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
                     event.data = dragSourceLabel.getText(); // Transfer text
+                    System.out.println("Dragging TextTransfer: " + event.data);
                 } else if (URLTransfer.getInstance().isSupportedType(event.dataType)) {
                     event.data = dragSourceLabel.getText(); // Transfer URL
+                    System.out.println("Dragging URLTransfer: " + event.data);
                 }
             }
         });
@@ -98,10 +150,21 @@ public class DragAndDropTest {
         textDragSource.setTransfer(new Transfer[] {TextTransfer.getInstance()});
 
         textDragSource.addDragListener(new DragSourceAdapter() {
+        	
+        	@Override
+        	public void dragStart(DragSourceEvent event) {
+        		// TODO Auto-generated method stub
+        		super.dragStart(event);
+        		DragSource source = (DragSource)event.getSource();
+        		Text t = (Text) source.getControl();
+                System.out.println("Dragging TextTransfer from Text Widget: " + t.getText()  + "Transfers : " +  displayTransfers(source.getTransfer()));
+
+        	}
             @Override
             public void dragSetData(DragSourceEvent event) {
                 if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
                     event.data = editableText.getText(); // Transfer editable text
+                    System.out.println("Dragging TextTransfer from Text Widget: " + event.data);
                 }
             }
         });
