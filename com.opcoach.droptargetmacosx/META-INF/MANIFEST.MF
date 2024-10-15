@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Droptargetmacosx
+Bundle-SymbolicName: com.opcoach.droptargetmacosx
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: org.eclipse.swt;bundle-version="3.128.0"
+Bundle-Vendor: OPCOACH
+Automatic-Module-Name: com.opcoach.droptargetmacosx
+Bundle-RequiredExecutionEnvironment: JavaSE-21
