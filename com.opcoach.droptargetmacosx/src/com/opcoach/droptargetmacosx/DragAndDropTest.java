@@ -8,6 +8,7 @@ import org.eclipse.swt.dnd.DragSourceEvent;
 import org.eclipse.swt.dnd.DropTarget;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
+import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.dnd.TransferData;
@@ -66,7 +67,7 @@ public class DragAndDropTest {
         dropLabel.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         // Define the DropTarget with TextTransfer and URLTransfer
-        DropTarget dropTarget = new DropTarget(dropLabel, DND.DROP_COPY | DND.DROP_DEFAULT);
+        DropTarget dropTarget = new DropTarget(dropLabel, DND.DROP_COPY | DND.DROP_MOVE | DND.DROP_DEFAULT);
         Transfer[] types = new Transfer[] {TextTransfer.getInstance(), URLTransfer.getInstance()};
         dropTarget.setTransfer(types);
 
@@ -75,8 +76,16 @@ public class DragAndDropTest {
             @Override
             public void dragEnter(DropTargetEvent event) {
                 dropLabel.setBackground(new Color(display, 180, 180, 255)); // Highlight color on dragEnter
+                event.detail = DND.DROP_COPY;
             }
 
+            @Override
+            public void dropAccept(DropTargetEvent event) {
+            	// TODO Auto-generated method stub
+            	System.out.println("Enter in drop accept");
+            	super.dropAccept(event);
+            }
+            
             @Override
             public void dragLeave(DropTargetEvent event) {
                 dropLabel.setBackground(new Color(display, 200, 200, 190)); // Reset background color on dragLeave
@@ -94,6 +103,16 @@ public class DragAndDropTest {
                     String url = (String) URLTransfer.getInstance().nativeToJava(event.currentDataType);
                     dropLabel.setText(url != null ? "URL dropped: " + url : "No URL data found.");
                     System.out.println("Received URLTransfer");
+                } else if (FileTransfer.getInstance().isSupportedType(event.currentDataType)) {
+                    String[] files = (String[]) FileTransfer.getInstance().nativeToJava(event.currentDataType);
+                    if (files != null && files.length > 0) {
+                        dropLabel.setText("File(s) dropped: " + String.join(", ", files));
+                        for (String file : files) {
+                            System.out.println("File dropped: " + file);
+                        }
+                    } else {
+                        dropLabel.setText("No files were dropped.");
+                    }
                 } else {
                     // Handle unsupported transfer types
                     dropLabel.setText("Unsupported transfer type dropped.");
